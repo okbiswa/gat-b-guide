@@ -3,16 +3,32 @@
 import { useState, useRef, useEffect } from 'react';
 import { useChat } from 'ai/react';
 import { MessageCircle, X, Send, User, Bot, GraduationCap } from 'lucide-react';
-// import { Button } from '@/components/ui/button'; // Assuming shadcn is installed
-// import { Input } from '@/components/ui/input';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export function AdmissionAdvisor() {
   const [isOpen, setIsOpen] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
     api: '/api/chat',
   });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOpenChat = (e: any) => {
+      setIsOpen(true);
+      if (e.detail?.query) {
+        // We use append to simulate user typing and sending
+        append({
+          role: 'user',
+          content: e.detail.query,
+        });
+      }
+    };
+    
+    window.addEventListener('open-ai-chat', handleOpenChat);
+    return () => window.removeEventListener('open-ai-chat', handleOpenChat);
+  }, [append]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -60,20 +76,36 @@ export function AdmissionAdvisor() {
             )}
             
             {messages.map(m => (
-              // Only render user and assistant messages, skip tool calls for a cleaner UI
-              (m.role === 'user' || m.role === 'assistant') && (
-                <div key={m.id} className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {m.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0 text-blue-600 dark:text-blue-300">
-                      <Bot size={16} />
+              <div key={m.id} className="flex flex-col gap-1">
+                {/* User or Assistant Message Content */}
+                {(m.role === 'user' || m.role === 'assistant') && m.content && (
+                  <div className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    {m.role === 'assistant' && (
+                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0 text-blue-600 dark:text-blue-300">
+                        <Bot size={16} />
+                      </div>
+                    )}
+                    <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${m.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-bl-none prose prose-sm dark:prose-invert overflow-hidden'}`}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {m.content}
+                      </ReactMarkdown>
                     </div>
-                  )}
-                  <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${m.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-bl-none prose prose-sm dark:prose-invert'}`}>
-                    {/* In a real app, use react-markdown here */}
-                    <div className="text-sm whitespace-pre-wrap">{m.content}</div>
                   </div>
-                </div>
-              )
+                )}
+                
+                {/* Tool Invocations */}
+                {m.toolInvocations?.map((toolInvocation: any) => (
+                  <div key={toolInvocation.toolCallId} className="flex gap-3 justify-start items-center ml-11 text-xs text-zinc-500 bg-zinc-100 dark:bg-zinc-800/50 py-1 px-3 rounded-full w-fit border border-zinc-200 dark:border-zinc-700">
+                    <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+                    <span>Using tool: <strong>{toolInvocation.toolName}</strong></span>
+                    {toolInvocation.state === 'result' ? (
+                      <span className="text-green-600 dark:text-green-400">✓ Done</span>
+                    ) : (
+                      <span className="text-blue-600 dark:text-blue-400 animate-pulse">...</span>
+                    )}
+                  </div>
+                ))}
+              </div>
             ))}
             
             {isLoading && (

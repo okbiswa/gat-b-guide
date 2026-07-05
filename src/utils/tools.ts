@@ -29,12 +29,12 @@ export const agentTools = {
         recommended = recommended.filter(r => r.state?.toLowerCase() === state_preference.toLowerCase());
       }
       
-      return recommended.slice(0, 10); // Return top 10 to fit in context
+      return recommended.slice(0, 10);
     },
   }),
 
-  ambitiousChoices: tool({
-    description: 'Suggest colleges where the user is slightly below the cutoff (reach colleges).',
+  dreamChoices: tool({
+    description: 'Suggest dream/ambitious colleges where the user score is slightly below the cutoff (reach colleges).',
     parameters: z.object({
       score: z.number(),
       category: z.enum(['UR', 'EWS', 'OBC', 'SC', 'ST', 'DA']),
@@ -43,6 +43,7 @@ export const agentTools = {
       const institutes = getInstitutes();
       const cutoffs = getCutoffs();
       
+      // Cutoff is between score and score + 15
       const categoryCutoffs = cutoffs.filter(c => 
         c.category === category && 
         parseFloat(c.min_score) > score && 
@@ -62,7 +63,7 @@ export const agentTools = {
   }),
 
   safeChoices: tool({
-    description: 'Suggest safe colleges where the user is well above the cutoff.',
+    description: 'Suggest safe colleges where the user score is well above the cutoff.',
     parameters: z.object({
       score: z.number(),
       category: z.enum(['UR', 'EWS', 'OBC', 'SC', 'ST', 'DA']),
@@ -85,6 +86,86 @@ export const agentTools = {
           programme: inst?.programme_offered
         };
       }).slice(0, 5);
+    },
+  }),
+
+  applicationStrategy: tool({
+    description: 'Generate a comprehensive application strategy for a student with Dream, Realistic, Safe, and Backup choices based on their score and category.',
+    parameters: z.object({
+      score: z.number(),
+      category: z.enum(['UR', 'EWS', 'OBC', 'SC', 'ST', 'DA']),
+    }),
+    execute: async ({ score, category }) => {
+      const institutes = getInstitutes();
+      const cutoffs = getCutoffs();
+      const categoryCutoffs = cutoffs.filter(c => c.category === category);
+      
+      const strategy = {
+        dream: [] as any[],
+        realistic: [] as any[],
+        safe: [] as any[],
+        backup: [] as any[]
+      };
+
+      categoryCutoffs.forEach(c => {
+        const min = parseFloat(c.min_score);
+        const inst = institutes.find(i => i.institute_id === c.institute_id);
+        if (!inst) return;
+        
+        const entry = {
+          institute_name: inst.institute_name,
+          programme: inst.programme_offered,
+          cutoff: min,
+          margin: score - min
+        };
+
+        if (min > score && min <= score + 10) strategy.dream.push(entry);
+        else if (min <= score && min > score - 10) strategy.realistic.push(entry);
+        else if (min <= score - 10 && min > score - 25) strategy.safe.push(entry);
+        else if (min <= score - 25) strategy.backup.push(entry);
+      });
+
+      // Sort and slice
+      strategy.dream.sort((a, b) => b.cutoff - a.cutoff);
+      strategy.realistic.sort((a, b) => b.cutoff - a.cutoff);
+      strategy.safe.sort((a, b) => b.cutoff - a.cutoff);
+      strategy.backup.sort((a, b) => b.cutoff - a.cutoff);
+
+      return {
+        dream: strategy.dream.slice(0, 3),
+        realistic: strategy.realistic.slice(0, 3),
+        safe: strategy.safe.slice(0, 3),
+        backup: strategy.backup.slice(0, 2),
+      };
+    },
+  }),
+
+  researchRanking: tool({
+    description: 'Get the top research-focused institutes based on historical prestige and competitiveness.',
+    parameters: z.object({}),
+    execute: async () => {
+      return [
+        { rank: 1, name: "Jawaharlal Nehru University", strength: "Core Biotechnology & Life Sciences" },
+        { rank: 2, name: "IIT Indore", strength: "Bio-Sciences and Bio-Medical Engineering" },
+        { rank: 3, name: "University of Hyderabad", strength: "Molecular Biology" },
+        { rank: 4, name: "Regional Centre for Biotechnology", strength: "Biotechnology (RCB)" },
+        { rank: 5, name: "Rajiv Gandhi Centre for Biotechnology", strength: "Disease Biology & Molecular Medicine" }
+      ];
+    },
+  }),
+
+  youtubeDiscussion: tool({
+    description: 'Fetch relevant YouTube discussion videos for an institute.',
+    parameters: z.object({
+      institute_name: z.string(),
+    }),
+    execute: async ({ institute_name }) => {
+      return {
+        videos: [
+          { title: `${institute_name} GAT-B Admission Review & Campus Tour`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(institute_name)}+gat-b+review` },
+          { title: `Life at ${institute_name} - MSc Biotechnology`, url: `https://www.youtube.com/results?search_query=life+at+${encodeURIComponent(institute_name)}+msc` }
+        ]
+      };
     },
   }),
 
