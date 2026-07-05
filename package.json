@@ -9,9 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@ai-sdk/google": "^0.0.52",
+    "@ai-sdk/google": "^4.0.8",
     "@ai-sdk/react": "^4.0.16",
-    "ai": "^3.4.18",
+    "ai": "^7.0.15",
     "csv-parse": "^7.0.1",
     "lucide-react": "^1.23.0",
     "next": "16.2.10",
