@@ -31,15 +31,22 @@ export const maxDuration = 30;
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  try {
+    const { messages } = await req.json();
 
-  const result = await streamText({
-    model: google('gemini-1.5-pro'),
-    system: systemPrompt,
-    messages,
-    tools: agentTools,
-    maxSteps: 5, // Allow multi-step tool calls
-  });
+    const result = await streamText({
+      model: google('gemini-1.5-pro'),
+      system: systemPrompt,
+      messages,
+      tools: agentTools,
+      maxSteps: 5, // Allow multi-step tool calls
+    });
 
-  return result.toDataStreamResponse();
+    return result.toDataStreamResponse();
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: error.message || error.toString() }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
 }
