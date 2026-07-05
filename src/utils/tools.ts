@@ -29,7 +29,7 @@ export const agentTools = {
         recommended = recommended.filter(r => r.state?.toLowerCase() === state_preference.toLowerCase());
       }
       
-      return recommended.slice(0, 10);
+      return { results: recommended.slice(0, 10) };
     },
   }),
 
@@ -50,7 +50,7 @@ export const agentTools = {
         parseFloat(c.min_score) <= score + 15
       );
       
-      return categoryCutoffs.map(c => {
+      return { results: categoryCutoffs.map(c => {
         const inst = institutes.find(i => i.institute_id === c.institute_id);
         return {
           ...c,
@@ -58,7 +58,7 @@ export const agentTools = {
           state: inst?.state,
           programme: inst?.programme_offered
         };
-      }).slice(0, 5);
+      }).slice(0, 5) };
     },
   }),
 
@@ -77,7 +77,7 @@ export const agentTools = {
         parseFloat(c.min_score) <= score - 15
       );
       
-      return categoryCutoffs.map(c => {
+      return { results: categoryCutoffs.map(c => {
         const inst = institutes.find(i => i.institute_id === c.institute_id);
         return {
           ...c,
@@ -85,7 +85,7 @@ export const agentTools = {
           state: inst?.state,
           programme: inst?.programme_offered
         };
-      }).slice(0, 5);
+      }).slice(0, 5) };
     },
   }),
 
@@ -144,13 +144,13 @@ export const agentTools = {
     description: 'Get the top research-focused institutes based on historical prestige and competitiveness.',
     parameters: z.object({}),
     execute: async () => {
-      return [
+      return { results: [
         { rank: 1, name: "Jawaharlal Nehru University", strength: "Core Biotechnology & Life Sciences" },
         { rank: 2, name: "IIT Indore", strength: "Bio-Sciences and Bio-Medical Engineering" },
         { rank: 3, name: "University of Hyderabad", strength: "Molecular Biology" },
         { rank: 4, name: "Regional Centre for Biotechnology", strength: "Biotechnology (RCB)" },
         { rank: 5, name: "Rajiv Gandhi Centre for Biotechnology", strength: "Disease Biology & Molecular Medicine" }
-      ];
+      ] };
     },
   }),
 
@@ -218,7 +218,7 @@ export const agentTools = {
       const inst = institutes.find(i => i.institute_name.toLowerCase().includes(institute_name.toLowerCase()));
       if (!inst) return { error: 'Institute not found' };
       
-      return cutoffs.filter(c => c.institute_id === inst.institute_id && c.category === category);
+      return { results: cutoffs.filter(c => c.institute_id === inst.institute_id && c.category === category) };
     },
   }),
 
