@@ -45,9 +45,7 @@ function loadCSV<T>(filePath: string): T[] {
 
 export function getInstitutes(): Institute[] {
   if (!institutesCache) {
-    // Navigate up from .next/server/app/api/chat or src/utils depending on env
-    // Assuming CSVs are in the root directory (parent of app)
-    const filePath = path.join(process.cwd(), '..', 'institutes.csv');
+    const filePath = path.join(process.cwd(), 'data', 'institutes.csv');
     institutesCache = loadCSV<Institute>(filePath);
   }
   return institutesCache;
@@ -55,7 +53,7 @@ export function getInstitutes(): Institute[] {
 
 export function getCutoffs(): Cutoff[] {
   if (!cutoffsCache) {
-    const filePath = path.join(process.cwd(), '..', 'master_cutoffs.csv');
+    const filePath = path.join(process.cwd(), 'data', 'master_cutoffs.csv');
     cutoffsCache = loadCSV<Cutoff>(filePath);
   }
   return cutoffsCache;
