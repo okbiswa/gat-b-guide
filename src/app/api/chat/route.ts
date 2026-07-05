@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const result = await streamText({
-    model: google('gemini-2.5-pro'),
+    model: google('gemini-1.5-pro'),
     system: systemPrompt,
     messages,
     tools: agentTools,
