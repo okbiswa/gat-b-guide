@@ -39,7 +39,6 @@ export async function POST(req: Request) {
       system: systemPrompt,
       messages,
       tools: agentTools,
-      maxSteps: 5, // Allow multi-step tool calls
     });
 
     return result.toDataStreamResponse();
