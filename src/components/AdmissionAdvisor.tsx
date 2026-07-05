@@ -10,6 +10,7 @@ export function AdmissionAdvisor() {
   const [isOpen, setIsOpen] = useState(false);
   const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
     api: '/api/chat',
+    maxToolRoundtrips: 5,
   });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
