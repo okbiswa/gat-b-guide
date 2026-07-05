@@ -28,6 +28,7 @@ At the very end of EVERY SINGLE response you generate, you MUST append a "Reason
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   const { messages } = await req.json();

@@ -45,7 +45,7 @@ function loadCSV<T>(filePath: string): T[] {
 
 export function getInstitutes(): Institute[] {
   if (!institutesCache) {
-    const filePath = path.join(process.cwd(), 'data', 'institutes.csv');
+    const filePath = path.join(process.cwd(), 'public', 'data', 'institutes.csv');
     institutesCache = loadCSV<Institute>(filePath);
   }
   return institutesCache;
@@ -53,7 +53,7 @@ export function getInstitutes(): Institute[] {
 
 export function getCutoffs(): Cutoff[] {
   if (!cutoffsCache) {
-    const filePath = path.join(process.cwd(), 'data', 'master_cutoffs.csv');
+    const filePath = path.join(process.cwd(), 'public', 'data', 'master_cutoffs.csv');
     cutoffsCache = loadCSV<Cutoff>(filePath);
   }
   return cutoffsCache;
